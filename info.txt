@@ -1,0 +1,18 @@
+self.tangent(normalized): frame 75
+self.tangent(unnormalized): frame 75
+
+self.a1: frame 75
+self.a2: frame 75
+
+a_space(init): frame 75
+a_space(rotated): frame 75
+
+angel: frame 74
+
+frame 74, Angel:
+    a_space = [-0.707106, -0.707107, -0.000054]
+    a1[i, j] = [-0.707106, -0.707107, -0.000000]
+    tangent[i, j] = [0.707107, -0.707106, -0.000000]
+
+    a=?
+    ti.math.acos(a) = nan  #problem found
