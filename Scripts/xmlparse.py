@@ -8,6 +8,7 @@ ti.init(arch=ti.cuda)
 class Scene:
     def __init__(self, path):
         self.dt = 1e-7
+        self.damping = 0.99
         self.tree = ET.parse(path)
         root = self.tree.getroot()
         i = 0
