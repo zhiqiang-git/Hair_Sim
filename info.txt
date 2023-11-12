@@ -1,18 +1,23 @@
-self.tangent(normalized): frame 75
-self.tangent(unnormalized): frame 75
+self.F:
+    problem location: Hair_DER.Bend_Force()
+    reasons: self.grad_bend
 
-self.a1: frame 75
-self.a2: frame 75
+self.grad_bend:
+    kb check
+    bot check
+    t_hat check
+    el, er check
 
-a_space(init): frame 75
-a_space(rotated): frame 75
+    problem location: row_l1
+        row_l1 = (
+            -self.k[i, j][0] * t_hat
+            + 2 * ti.math.cross(self.tangent[i, j + 1], self.m2[i, j]) / bot
+        ) / el
+    
+    self.k[i, j][0]            0.000000
+    t_hat                      [-1.031574, 0.422306, 0.364534]
+    self.tangent[i, j + 1]     [-0.710788, 0.024899, 0.702966]
+    self.m2[i, j]              [nan, nan, nan]
 
-angel: frame 74
-
-frame 74, Angel:
-    a_space = [-0.707106, -0.707107, -0.000054]
-    a1[i, j] = [-0.707106, -0.707107, -0.000000]
-    tangent[i, j] = [0.707107, -0.707106, -0.000000]
-
-    a=?
-    ti.math.acos(a) = nan  #problem found
+self.m2[i, j]:
+    

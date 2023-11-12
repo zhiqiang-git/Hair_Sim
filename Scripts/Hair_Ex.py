@@ -83,7 +83,7 @@ class Hair_DER:
         for i in range(self.num_rod):
             for j in range(self.num):
                 self.F[i, j] = ti.Vector([0, 0, 0])
-                self.V[i, j] = ti.Vector([0, 0, 0])
+                self.V[i, j] = scene.V[i, j]
                 self.X[i, j] = scene.X[i, j]
                 self.Fixed[i, j] = scene.Fixed[i, j]
                 if j != self.num - 1:
@@ -281,10 +281,11 @@ class Hair_DER:
                     # twist force variables
                     if j == 0:
                         self.i_miu[i, j] = 0  # bounding condition: Theta[0] = Theta[-1]
+                        self.miu[i, j] = 0
                     else:
-                        self.i_miu[i, j] = self.Theta[i, j] - self.Theta[i, j - 1]
+                        self.i_miu[i, j] = 0
+                        self.miu[i, j] = self.Theta[i, j] - self.Theta[i, j - 1]
                     self.ref_twist[i, j] = 0
-                    self.miu[i, j] = self.i_miu[i, j]
 
     #################################################################
     # update variables
@@ -396,6 +397,7 @@ class Hair_DER:
             t_hat = (self.tangent[i, j] + self.tangent[i, j + 1]) / bot
             el = self.edge_length[i, j]
             er = self.edge_length[i, j + 1]
+            # DkappaDe(l) and DkappaDf(r)
             # row1
             row_l1 = (
                 -self.k[i, j][0] * t_hat
@@ -439,7 +441,7 @@ class Hair_DER:
     @ti.kernel
     def Bend_Force(self):
         for i, j in self.kb:
-            cons = self.E * np.pi * (self.r**4) / (8 * self.ver_length[i, j + 1])
+            cons = self.E * np.pi * (self.r**4) / (8 * self.i_ver_length[i, j + 1])
 
             Fl = cons * (
                 self.grad_bend[i, j, 0].transpose() @ (self.k[i, j] - self.i_k[i, j])
@@ -461,7 +463,7 @@ class Hair_DER:
     @ti.kernel
     def Twist_Force(self):
         for i, j in self.kb:
-            cons = self.G * np.pi * (self.r**4) / (4 * self.ver_length[i, j + 1])
+            cons = self.G * np.pi * (self.r**4) / (4 * self.i_ver_length[i, j + 1])
             Fl = (
                 cons
                 * (self.miu[i, j + 1] - self.i_miu[i, j + 1])
@@ -502,7 +504,7 @@ class Hair_DER:
     @ti.kernel
     def Bend_Torque(self):
         for i, j in self.kb:
-            cons = self.E * np.pi * (self.r**4) / (8 * self.ver_length[i, j + 1])
+            cons = self.E * np.pi * (self.r**4) / (8 * self.i_ver_length[i, j + 1])
             Tl = cons * ti.math.dot(
                 self.grad_bend_tor[i, j, 0], self.k[i, j] - self.i_k[i, j]
             )
@@ -516,7 +518,7 @@ class Hair_DER:
     @ti.kernel
     def Twist_Torque(self):
         for i, j in self.kb:
-            cons = self.G * np.pi * (self.r**4) / (4 * self.ver_length[i, j + 1])
+            cons = self.G * np.pi * (self.r**4) / (4 * self.i_ver_length[i, j + 1])
             Tl = cons * (-1) * (self.miu[i, j + 1] - self.i_miu[i, j + 1])
             Tr = cons * (1) * (self.miu[i, j + 1] - self.i_miu[i, j + 1])
 
@@ -540,7 +542,7 @@ class Hair_DER:
             # self.Omega[i, j] *= self.damping
             self.Theta[i, j] += self.dt * self.Omega[i, j]
 
-    def step(self):
+    def Explicit_step(self):
         # set forces and torques to zero
         self.Clear()
 
@@ -548,14 +550,14 @@ class Hair_DER:
         # self.Gravity(ti.Vector([0.0, -981, 0.0]))
         self.Stretch()
         self.Bend_Gradient()
-        self.Bend_Force()
+        #self.Bend_Force()
         self.Twist_Gradient()
-        self.Twist_Force()
+        #self.Twist_Force()
 
         # calculate torques
         self.Bend_Grad_Torque()
-        self.Bend_Torque()
-        self.Twist_Torque()
+        #self.Bend_Torque()
+        #self.Twist_Torque()
 
         # explicit integration
         self.Explicit_Ver()

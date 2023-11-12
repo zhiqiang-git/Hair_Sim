@@ -1,5 +1,5 @@
 from xmlparse import Scene
-from Hair_Ex import Hair_DER
+from Hair import Hair_DER
 from gui import Gui
 import argparse
 
@@ -19,9 +19,11 @@ if __name__ == "__main__":
     file = open("Outfiles\outfile.txt", "w")
     while gui.window_state() and frames < 10000:
         Hair_Sim.write_to_file(file, frames)
-        # print("frame:{}".format(frames))
+        if(frames == 0):
+            Hair_Sim.Interupt_Theta()
+            pass
         for _ in range(int(1e-4 // m_Scene.dt)):
-            Hair_Sim.step()
+            Hair_Sim.Explicit_step(gravity=0)
         frames += 1
         m_Scene.update(Hair_Sim.X, Hair_Sim.Theta)
         gui.update_vertices(m_Scene.X)
